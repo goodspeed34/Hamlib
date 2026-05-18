@@ -259,7 +259,13 @@ hamlibjava_wrap.c: $(SWGDEP)
 	$(AM_V_GEN)$(SWIG) -java -package org.hamlib $(AM_CPPFLAGS) -I$(top_srcdir)/bindings \
 		-o $@ $$(test -f hamlib.swg || echo '$(srcdir)/')hamlib.swg
 
-all-java: libhamlibjava.la
+all-java: libhamlibjava.la hamlib-java.jar
+
+hamlib-java.jar: hamlibjava_wrap.c
+	$(AM_V_at)if test -n "$(JAVAC)"; then \
+		$(JAVAC) -d $(builddir) $(builddir)/*.java && \
+		jar cf $(builddir)/$@ -C $(builddir) org; \
+	fi
 
 check-java: all-java
 	$(AM_V_at)if test -n "$(JAVAC)" && test -n "$(JAVA)"; then \
@@ -275,13 +281,15 @@ clean-java:
 	-rm -rf $(builddir)/org
 	-rm -f $(builddir)/*.class
 	-rm -f $(builddir)/*.java
+	-rm -f $(builddir)/hamlib-java.jar
 
 install-java:
-	$(INSTALL) -d $(DESTDIR)$(pkglibdir)
-	$(INSTALL) $(builddir)/.libs/libhamlibjava.so $(DESTDIR)$(pkglibdir)/
+	$(INSTALL) -d $(DESTDIR)$(datadir)/java
+	$(INSTALL) -m 644 $(builddir)/hamlib-java.jar $(DESTDIR)$(datadir)/java/
 
 uninstall-java:
 	-rm -f $(DESTDIR)$(pkglibdir)/libhamlibjava.so
+	-rm -f $(DESTDIR)$(datadir)/java/hamlib-java.jar
 
 distclean-java: clean-java
 

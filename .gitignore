@@ -24,6 +24,7 @@ aclocal.m4
 autom4te.cache/
 bindings/*.class
 bindings/*.java
+bindings/*.jar
 bindings/org/
 bindings/Hamlib.py
 bindings/hamlib*_wrap.c
