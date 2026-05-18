@@ -236,6 +236,10 @@ const char *java_longlat2locator(double longitude, double latitude) {
 %}
 #endif
 
+#ifdef __ANDROID__
+%include android.swg
+#endif
+
 %include <hamlib/rig_dll.h>
 
 %inline {

@@ -9,7 +9,7 @@ AM_CPPFLAGS = @AM_CPPFLAGS@ -I$(top_srcdir)/include -I$(top_srcdir)/bindings  \
 AM_CFLAGS = @AM_CPPFLAGS@ -fno-strict-aliasing
 AM_CXXFLAGS = -O2
 
-SWGFILES = hamlib.swg ignore.swg rig.swg rotator.swg amplifier.swg macros.swg
+SWGFILES = hamlib.swg ignore.swg rig.swg rotator.swg amplifier.swg macros.swg android.swg
 
 SWGDEP = \
 	$(top_srcdir)/include/hamlib/rig.h \
@@ -33,7 +33,8 @@ EXTRA_DIST = $(SWGFILES) \
 	python/test_rot.py \
 	python/test_startup.py \
 	luatest.lua README.python \
-	java/HamlibTest.java
+	java/HamlibTest.java \
+	java/pty_helper.java
 
 exampledir = $(docdir)/examples
 example_DATA =
@@ -255,15 +256,23 @@ libhamlibjava_la_CPPFLAGS = $(AM_CPPFLAGS) $(JAVA_CPPFLAGS)
 libhamlibjava_la_LDFLAGS = -no-undefined -module -avoid-version
 libhamlibjava_la_LIBADD = $(top_builddir)/src/libhamlib.la
 
+if ANDROID
+SWIG_FLAGS = -D__ANDROID__
+JAVA_HELPER = $(srcdir)/java/pty_helper.java
+endif
+
 hamlibjava_wrap.c: $(SWGDEP)
-	$(AM_V_GEN)$(SWIG) -java -package org.hamlib $(AM_CPPFLAGS) -I$(top_srcdir)/bindings \
+	$(AM_V_GEN)$(SWIG) -java -package org.hamlib $(SWIG_FLAGS) $(AM_CPPFLAGS) -I$(top_srcdir)/bindings \
 		-o $@ $$(test -f hamlib.swg || echo '$(srcdir)/')hamlib.swg
 
 all-java: libhamlibjava.la hamlib-java.jar
 
 hamlib-java.jar: hamlibjava_wrap.c
 	$(AM_V_at)if test -n "$(JAVAC)"; then \
-		$(JAVAC) -d $(builddir) $(builddir)/*.java && \
+		$(JAVAC) -d $(builddir) $(builddir)/*.java; \
+		if test -n "$(JAVA_HELPER)"; then \
+			$(JAVAC) -cp $(builddir) -d $(builddir) $(JAVA_HELPER); \
+		fi; \
 		jar cf $(builddir)/$@ -C $(builddir) org; \
 	fi
 
