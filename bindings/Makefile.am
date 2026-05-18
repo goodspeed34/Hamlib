@@ -281,8 +281,9 @@ check-java: all-java
 		$(JAVAC) -d $(builddir) $(builddir)/*.java && \
 		$(JAVAC) -cp $(builddir) -d $(builddir) $(srcdir)/java/HamlibTest.java; \
 		if test "$(cross_compiling)" != "yes"; then \
-			LD_LIBRARY_PATH=$$LD_LIBRARY_PATH:$(top_builddir)/src/.libs:$(builddir)/.libs \
-			$(JAVA) -cp $(builddir) HamlibTest; \
+			$(JAVA) -cp $(builddir) \
+				-Djava.library.path="$(top_builddir)/src/.libs:$(builddir)/.libs" \
+				HamlibTest; \
 		fi \
 	fi
 
