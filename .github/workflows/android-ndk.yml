@@ -47,7 +47,7 @@ jobs:
     - name: configure
       run: >
         ./configure --host=${{ matrix.target.host }}
-        --without-libusb
+        --without-libusb --with-java-binding
 
     - name: make
       run: make -j $(nproc) V=0 --no-print-directory

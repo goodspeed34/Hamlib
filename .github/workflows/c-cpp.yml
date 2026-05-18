@@ -25,6 +25,7 @@ jobs:
             --with-cxx-binding=no
             --with-indi=no
             --with-libusb=no
+            --with-java-binding=no
             --with-lua-binding=no
             --with-perl-binding=no
             --with-python-binding=no
@@ -43,6 +44,7 @@ jobs:
             --with-cxx-binding=yes
             --with-indi=yes
             --with-libusb=yes
+            --with-java-binding=yes
             --with-lua-binding=yes
             --with-perl-binding=yes
             --with-python-binding=yes
