@@ -777,9 +777,23 @@ AS_IF([test x"${cf_with_java_binding}" = "xyes"],[
     AS_IF([test "x$JAVAC" = "x"], [AC_MSG_ERROR([javac not found, required for Java binding])])
     AC_CHECK_TOOL([JAVA], [java])
 
-    dnl Find JNI headers
-    JAVA_HOME="${JAVA_HOME:-$(dirname $(dirname $(readlink -f $(which javac))))}"
-    JAVA_CPPFLAGS="-I${JAVA_HOME}/include -I${JAVA_HOME}/include/linux"
+    dnl Find JNI headers — try macOS java_home helper first, then resolve javac path
+    AS_IF([test -z "${JAVA_HOME}"],
+        [AS_IF([test -x /usr/libexec/java_home],
+            [JAVA_HOME=$(/usr/libexec/java_home 2>/dev/null)],
+            [dnl Linux: resolve javac symlink to the JDK root
+             JAVAC_PATH=$(which javac)
+             AS_IF([test -L "$JAVAC_PATH"],
+                 [JAVA_HOME=$(dirname $(dirname $(readlink -f "$JAVAC_PATH" 2>/dev/null || readlink "$JAVAC_PATH")))],
+                 [JAVA_HOME=$(dirname $(dirname "$JAVAC_PATH"))])])])
+    dnl Probe for the platform-specific JNI include dir (linux, darwin, win32)
+    JAVA_CPPFLAGS="-I${JAVA_HOME}/include"
+    AS_IF([test -d "${JAVA_HOME}/include/darwin"],
+        [JAVA_CPPFLAGS="${JAVA_CPPFLAGS} -I${JAVA_HOME}/include/darwin"],
+        [AS_IF([test -d "${JAVA_HOME}/include/linux"],
+            [JAVA_CPPFLAGS="${JAVA_CPPFLAGS} -I${JAVA_HOME}/include/linux"],
+            [AS_IF([test -d "${JAVA_HOME}/include/win32"],
+                [JAVA_CPPFLAGS="${JAVA_CPPFLAGS} -I${JAVA_HOME}/include/win32"])])])
     AS_IF([test ! -f "${JAVA_HOME}/include/jni.h"],
         [AC_MSG_WARN([jni.h not found at ${JAVA_HOME}/include, trying other locations])
          JAVA_CPPFLAGS=""])
