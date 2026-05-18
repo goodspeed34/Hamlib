@@ -248,7 +248,7 @@ if ENABLE_JAVA
 BUILT_SOURCES += hamlibjava_wrap.c
 MOSTLYCLEANFILES += hamlibjava_wrap.c
 
-pkglib_LTLIBRARIES = libhamlibjava.la
+lib_LTLIBRARIES = libhamlibjava.la
 
 nodist_libhamlibjava_la_SOURCES = hamlibjava_wrap.c
 libhamlibjava_la_CPPFLAGS = $(AM_CPPFLAGS) $(JAVA_CPPFLAGS)
@@ -288,7 +288,7 @@ install-java:
 	$(INSTALL) -m 644 $(builddir)/hamlib-java.jar $(DESTDIR)$(datadir)/java/
 
 uninstall-java:
-	-rm -f $(DESTDIR)$(pkglibdir)/libhamlibjava.so
+	-rm -f $(DESTDIR)$(libdir)/libhamlibjava.so
 	-rm -f $(DESTDIR)$(datadir)/java/hamlib-java.jar
 
 distclean-java: clean-java
