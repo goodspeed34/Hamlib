@@ -141,3 +141,11 @@
 %ignore Rig::set_parm(char const *,int);
 #endif
 
+
+#ifdef SWIGJAVA
+/* int* ext_tokens confuses SWIG Java's type mapping in rot_caps/amp_caps */
+%ignore rig_caps::ext_tokens;
+%ignore rot_caps::ext_tokens;
+%ignore amp_caps::ext_tokens;
+%ignore amp_caps::ext_funcs;
+#endif

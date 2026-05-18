@@ -22,6 +22,9 @@ Makefile.in
 __pycache__
 aclocal.m4
 autom4te.cache/
+bindings/*.class
+bindings/*.java
+bindings/org/
 bindings/Hamlib.py
 bindings/hamlib*_wrap.c
 bindings/hamlibvb.bas

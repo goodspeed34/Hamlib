@@ -35,6 +35,11 @@
 
 #include <limits.h>
 
+#ifdef SWIGJAVA
+/* Forward declaration for Java wrapper (longlat2locator is declared in rig.h) */
+int longlat2locator(double longitude, double latitude, char *locator_res, int pair_count);
+#endif
+
 %}
 
 /*
@@ -208,6 +213,27 @@
 %cstring_bounded_output(char *hamlib_copyright2, 4)
 #endif
 #endif
+#endif
+
+#ifdef SWIGJAVA
+/* Java-friendly wrapper for longlat2locator that returns String directly */
+%ignore longlat2locator;
+
+%rename(longlat2locator) java_longlat2locator;
+
+%pragma(java) jniclasscode = %{
+    static {
+        System.loadLibrary("hamlibjava");
+    }
+%}
+
+%inline %{
+const char *java_longlat2locator(double longitude, double latitude) {
+    static char locator[13];
+    longlat2locator(longitude, latitude, locator, 6);
+    return locator;
+}
+%}
 #endif
 
 %include <hamlib/rig_dll.h>

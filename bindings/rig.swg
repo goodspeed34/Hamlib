@@ -704,6 +704,7 @@ int rig_spectrum_cb_python(RIG *rig, struct rig_spectrum_line *rig_spectrum_line
 		return chan;
 	}
 
+#ifndef SWIGJAVA
 	void get_conf(hamlib_token_t tok, char *returnstr) {
 		returnstr[0] = '\0';
 		self->error_status = rig_get_conf2(self->rig, tok, returnstr, MAX_RETURNSTR);
@@ -723,6 +724,34 @@ int rig_spectrum_cb_python(RIG *rig, struct rig_spectrum_line *rig_spectrum_line
 		self->error_status = rig_recv_dtmf(self->rig, vfo, returnstr, &len);
 		returnstr[len] = '\0';
 	}
+#else
+	const char *get_conf(hamlib_token_t tok) {
+		static char buf[MAX_RETURNSTR];
+		buf[0] = '\0';
+		self->error_status = rig_get_conf2(self->rig, tok, buf, MAX_RETURNSTR);
+		return buf;
+	}
+
+	const char *get_conf(const char *name) {
+		static char buf[MAX_RETURNSTR];
+		buf[0] = '\0';
+		hamlib_token_t tok = rig_token_lookup(self->rig, name);
+		if (tok == RIG_CONF_END) {
+			self->error_status = -RIG_EINVAL;
+			return "";
+		}
+		self->error_status = rig_get_conf2(self->rig, tok, buf, MAX_RETURNSTR);
+		return buf;
+	}
+
+	const char *recv_dtmf(vfo_t vfo = RIG_VFO_CURR) {
+		static char buf[MAX_RETURNSTR];
+		int len = MAX_RETURNSTR;
+		self->error_status = rig_recv_dtmf(self->rig, vfo, buf, &len);
+		buf[len] = '\0';
+		return buf;
+	}
+#endif
 	const char * get_info(void) {
 		const char *s;
 		s = rig_get_info(self->rig);

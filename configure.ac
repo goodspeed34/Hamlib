@@ -763,6 +763,41 @@ AS_IF([test x"${cf_with_lua_binding}" = "xyes"],[
 AM_CONDITIONAL([ENABLE_LUA], [test x"${cf_with_lua_binding}" = "xyes"])
 
 
+# Java bindings
+AC_MSG_CHECKING([whether to build java binding])
+AC_ARG_WITH([java-binding],
+    [AS_HELP_STRING([--with-java-binding],
+        [build java binding @<:@default=no@:>@])],
+    [cf_with_java_binding=$withval],
+    [cf_with_java_binding=no])
+AC_MSG_RESULT([$cf_with_java_binding])
+
+AS_IF([test x"${cf_with_java_binding}" = "xyes"],[
+    AC_CHECK_TOOL([JAVAC], [javac])
+    AS_IF([test "x$JAVAC" = "x"], [AC_MSG_ERROR([javac not found, required for Java binding])])
+    AC_CHECK_TOOL([JAVA], [java])
+
+    dnl Find JNI headers
+    JAVA_HOME="${JAVA_HOME:-$(dirname $(dirname $(readlink -f $(which javac))))}"
+    JAVA_CPPFLAGS="-I${JAVA_HOME}/include -I${JAVA_HOME}/include/linux"
+    AS_IF([test ! -f "${JAVA_HOME}/include/jni.h"],
+        [AC_MSG_WARN([jni.h not found at ${JAVA_HOME}/include, trying other locations])
+         JAVA_CPPFLAGS=""])
+    AC_SUBST([JAVA_CPPFLAGS])
+
+    BINDING_LIST="${BINDING_LIST} java"
+    BINDING_ALL="${BINDING_ALL} all-java"
+    BINDING_CHECK="${BINDING_CHECK} check-java"
+    BINDING_CLEAN="${BINDING_CLEAN} clean-java"
+    BINDING_DISTCLEAN="${BINDING_DISTCLEAN} distclean-java"
+    BINDING_INSTALL_EXEC="${BINDING_INSTALL_EXEC} install-java"
+    BINDING_UNINSTALL="${BINDING_UNINSTALL} uninstall-java"])
+
+AM_CONDITIONAL([ENABLE_JAVA], [test x"${cf_with_java_binding}" = "xyes"])
+
+AC_SUBST([cross_compiling])
+
+
 dnl Only search for Swig if one or more bindings are enabled.
 AS_IF([test "x${BINDING_ALL}" != "x"],
     [# macros/ax_pkg_swig.m4
@@ -1019,6 +1054,7 @@ echo \
 
  Package features:
     With C++ binding                ${cf_with_cxx_binding}
+    With Java binding               ${cf_with_java_binding}
     With Perl binding               ${cf_with_perl_binding}
     With Python binding             ${cf_with_python_binding}
     With TCL binding                ${build_tcl}

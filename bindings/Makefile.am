@@ -32,7 +32,8 @@ EXTRA_DIST = $(SWGFILES) \
 	python/test_rig.py \
 	python/test_rot.py \
 	python/test_startup.py \
-	luatest.lua README.python
+	luatest.lua README.python \
+	java/HamlibTest.java
 
 exampledir = $(docdir)/examples
 example_DATA =
@@ -238,6 +239,54 @@ uninstall-lua:
 
 endif
 # Lua
+
+
+if ENABLE_JAVA
+##########################################
+# Java/JNI binding
+
+BUILT_SOURCES += hamlibjava_wrap.c
+MOSTLYCLEANFILES += hamlibjava_wrap.c
+
+pkglib_LTLIBRARIES = libhamlibjava.la
+
+nodist_libhamlibjava_la_SOURCES = hamlibjava_wrap.c
+libhamlibjava_la_CPPFLAGS = $(AM_CPPFLAGS) $(JAVA_CPPFLAGS)
+libhamlibjava_la_LDFLAGS = -no-undefined -module -avoid-version
+libhamlibjava_la_LIBADD = $(top_builddir)/src/libhamlib.la
+
+hamlibjava_wrap.c: $(SWGDEP)
+	$(AM_V_GEN)$(SWIG) -java -package org.hamlib $(AM_CPPFLAGS) -I$(top_srcdir)/bindings \
+		-o $@ $$(test -f hamlib.swg || echo '$(srcdir)/')hamlib.swg
+
+all-java: libhamlibjava.la
+
+check-java: all-java
+	$(AM_V_at)if test -n "$(JAVAC)" && test -n "$(JAVA)"; then \
+		$(JAVAC) -d $(builddir) $(builddir)/*.java && \
+		$(JAVAC) -cp $(builddir) -d $(builddir) $(srcdir)/java/HamlibTest.java; \
+		if test "$(cross_compiling)" != "yes"; then \
+			LD_LIBRARY_PATH=$$LD_LIBRARY_PATH:$(top_builddir)/src/.libs:$(builddir)/.libs \
+			$(JAVA) -cp $(builddir) HamlibTest; \
+		fi \
+	fi
+
+clean-java:
+	-rm -rf $(builddir)/org
+	-rm -f $(builddir)/*.class
+	-rm -f $(builddir)/*.java
+
+install-java:
+	$(INSTALL) -d $(DESTDIR)$(pkglibdir)
+	$(INSTALL) $(builddir)/.libs/libhamlibjava.so $(DESTDIR)$(pkglibdir)/
+
+uninstall-java:
+	-rm -f $(DESTDIR)$(pkglibdir)/libhamlibjava.so
+
+distclean-java: clean-java
+
+endif
+# Java
 
 
 all-local: @BINDING_ALL@
